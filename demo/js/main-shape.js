@@ -1,4 +1,9 @@
-'use strict'
+import * as THREE from 'three';
+import {OrbitControls} from './OrbitControls.js';
+// import {GUI} from 'three/examples/jsm/libs/dat.gui.module.js';
+import {ConstantSpline} from './THREE.ConstantSpline.js';
+import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+
 
 var container = document.getElementById( 'container' );
 

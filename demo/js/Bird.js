@@ -1,40 +1,42 @@
-var Bird = function () {
+import { BufferGeometry, Float32BufferAttribute } from "three";
 
-	var scope = this;
+		function v(x, y, z,vertices) {
 
-	THREE.Geometry.call( this );
+			vertices.push(x, y, z);
 
-	v(   5,   0,   0 );
-	v( - 5, - 2,   1 );
-	v( - 5,   0,   0 );
-	v( - 5, - 2, - 1 );
+		}
 
-	v(   0,   2, - 6 );
-	v(   0,   2,   6 );
-	v(   2,   0,   0 );
-	v( - 3,   0,   0 );
+		function f3(a, b, c,indexes) {
 
-	f3( 0, 2, 1 );
-	// f3( 0, 3, 2 );
+			indexes.push(a, b, c);
 
-	f3( 4, 7, 6 );
-	f3( 5, 6, 7 );
+		}
+export class Bird  extends BufferGeometry {
+	constructor() {
+		super()
+		const scope = this;
+		const vertices = [];
+		const indexes = [];
+		v(5, 0, 0, vertices);
+		v(-5, -2, 1, vertices);
+		v(-5, 0, 0, vertices);
+		v(-5, -2, -1, vertices);
 
-	this.computeFaceNormals();
+		v(0, 2, -6, vertices);
+		v(0, 2, 6, vertices);
+		v(2, 0, 0, vertices);
+		v(-3, 0, 0, vertices);
 
-	function v( x, y, z ) {
+		f3(0, 2, 1,indexes);
+		// f3( 0, 3, 2 ,indexes);
+		f3(4, 7, 6,indexes);
+		f3(5, 6, 7,indexes);
+		this.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+		this.setIndex(indexes);
 
-		scope.vertices.push( new THREE.Vector3( x, y, z ) );
+		this.computeVertexNormals();
+
 
 	}
-
-	function f3( a, b, c ) {
-
-		scope.faces.push( new THREE.Face3( a, b, c ) );
-
-	}
-
 }
 
-Bird.prototype = Object.create( THREE.Geometry.prototype );
-Bird.prototype.constructor = Bird;

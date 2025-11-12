@@ -1,13 +1,27 @@
-;(function() {
-  'use strict'
+import * as THREE from 'three';
 
-  var root = this
+  function memcpy(src, srcOffset, dst, dstOffset, length) {
+    var i
 
-  var has_require = typeof require !== 'undefined'
+    src = src.subarray || src.slice ? src : src.buffer
+    dst = dst.subarray || dst.slice ? dst : dst.buffer
 
-  var THREE = root.THREE || (has_require && require('three'))
-  if (!THREE) throw new Error('MeshLine requires three.js')
+    src = srcOffset
+      ? src.subarray
+        ? src.subarray(srcOffset, length && srcOffset + length)
+        : src.slice(srcOffset, length && srcOffset + length)
+      : src
 
+    if (dst.set) {
+      dst.set(src, dstOffset)
+    } else {
+      for (i = 0; i < src.length; i++) {
+        dst[i + dstOffset] = src[i]
+      }
+    }
+
+    return dst
+  }
   class MeshLine extends THREE.BufferGeometry {
     constructor()
     {
@@ -65,23 +79,23 @@
         },
       })
     }
-  }
+ 
 
-  MeshLine.prototype.setMatrixWorld = function(matrixWorld) {
+  setMatrixWorld (matrixWorld) {
     this.matrixWorld = matrixWorld
   }
 
   // setting via a geometry is rather superfluous
   // as you're creating a unecessary geometry just to throw away
   // but exists to support previous api
-  MeshLine.prototype.setGeometry = function(g, c) {
+  setGeometry (g, c) {
 		// as the input geometry are mutated we store them
 		// for later retreival when necessary (declaritive architectures)
 		this._geometry = g;
         this.setPoints(g.getAttribute("position").array, c);
   }
 
-  MeshLine.prototype.setPoints = function(points, wcb) {
+  setPoints (points, wcb) {
 		if (!(points instanceof Float32Array) && !(points instanceof Array)) {
 			console.error(
 				"ERROR: The BufferArray of points is not instancied correctly."
@@ -118,7 +132,7 @@
 		this.process();
   }
 
-  function MeshLineRaycast(raycaster, intersects) {
+ raycast(raycaster, intersects) {
     var inverseMatrix = new THREE.Matrix4()
     var ray = new THREE.Ray()
     var sphere = new THREE.Sphere()
@@ -184,8 +198,7 @@
       }
     }
   }
-  MeshLine.prototype.raycast = MeshLineRaycast
-  MeshLine.prototype.compareV3 = function(a, b) {
+  compareV3 (a, b) {
     var aa = a * 6
     var ab = b * 6
     return (
@@ -195,12 +208,12 @@
     )
   }
 
-  MeshLine.prototype.copyV3 = function(a) {
+  copyV3 (a) {
     var aa = a * 6
     return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]]
   }
 
-  MeshLine.prototype.process = function() {
+  process () {
     var l = this.positions.length / 6
 
     this.previous = []
@@ -309,34 +322,11 @@
     this.computeBoundingBox()
   }
 
-  function memcpy(src, srcOffset, dst, dstOffset, length) {
-    var i
-
-    src = src.subarray || src.slice ? src : src.buffer
-    dst = dst.subarray || dst.slice ? dst : dst.buffer
-
-    src = srcOffset
-      ? src.subarray
-        ? src.subarray(srcOffset, length && srcOffset + length)
-        : src.slice(srcOffset, length && srcOffset + length)
-      : src
-
-    if (dst.set) {
-      dst.set(src, dstOffset)
-    } else {
-      for (i = 0; i < src.length; i++) {
-        dst[i + dstOffset] = src[i]
-      }
-    }
-
-    return dst
-  }
-
   /**
    * Fast method to advance the line by one position.  The oldest position is removed.
    * @param position
    */
-  MeshLine.prototype.advance = function(position) {
+  advance(position) {
     var positions = this._attributes.position.array
     var previous = this._attributes.previous.array
     var next = this._attributes.next.array
@@ -369,6 +359,7 @@
     this._attributes.previous.needsUpdate = true
     this._attributes.next.needsUpdate = true
   }
+}
 
   THREE.ShaderChunk['meshline_vert'] = [
     '',
@@ -670,13 +661,12 @@
 
       this.setValues(parameters)
     }
-  }
-
-  MeshLineMaterial.prototype.copy = function(source) {
-    THREE.ShaderMaterial.prototype.copy.call(this, source)
-
-    this.lineWidth = source.lineWidth
-    this.map = source.map
+    
+    copy (source) {
+      THREE.ShaderMaterial.prototype.copy.call(this, source)
+      
+      this.lineWidth = source.lineWidth
+      this.map = source.map
     this.useMap = source.useMap
     this.alphaMap = source.alphaMap
     this.useAlphaMap = source.useAlphaMap
@@ -691,24 +681,15 @@
     this.visibility = source.visibility
     this.alphaTest = source.alphaTest
     this.repeat.copy(source.repeat)
-
+    
     return this
   }
-
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = {
-        MeshLine: MeshLine,
-        MeshLineMaterial: MeshLineMaterial,
-        MeshLineRaycast: MeshLineRaycast,
-      }
-    }
-    exports.MeshLine = MeshLine
-    exports.MeshLineMaterial = MeshLineMaterial
-    exports.MeshLineRaycast = MeshLineRaycast
-  } else {
-    root.MeshLine = MeshLine
-    root.MeshLineMaterial = MeshLineMaterial
-    root.MeshLineRaycast = MeshLineRaycast
+}
+  
+  export {
+    MeshLine,
+    MeshLineMaterial,
+    
   }
-}.call(this))
+
+

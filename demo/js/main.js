@@ -1,5 +1,8 @@
-'use strict'
-
+import * as THREE from 'three';
+import {OrbitControls} from './OrbitControls.js';
+// import {GUI} from 'three/examples/jsm/libs/dat.gui.module.js';
+import {ConstantSpline} from './THREE.ConstantSpline.js';
+import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
 var container = document.getElementById( 'container' );
 
 var scene = new THREE.Scene();
@@ -11,7 +14,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
 container.appendChild( renderer.domElement );
 
-var controls = new THREE.OrbitControls( camera, renderer.domElement );
+var controls = new OrbitControls( camera, renderer.domElement );
 var clock = new THREE.Clock();
 
 var lines = [];
@@ -46,6 +49,20 @@ var gui = new dat.GUI();
 
 window.addEventListener( 'load', function() {
 
+	function updateMaterial() {
+		for ( let line of lines){
+			line.material.uniforms.dashArray.value = params.dashArray;
+			line.material.uniforms.dashRatio.value = params.dashRatio;
+			line.material.uniforms.dashOffset.value = params.animateDashOffset ? clock.getElapsedTime() : 0;
+			line.material.uniforms.sizeAttenuation.value = params.sizeAttenuation;
+			line.material.uniforms.lineWidth.value = params.animateWidth ? Maf.randomInRange( 1, params.lineWidth ) : params.lineWidth;
+			if( params.strokes ) {
+				line.material.map = strokeTexture;
+			} else {
+				line.material.map = null;
+			}
+		}
+	}
 	function update() {
 		if( params.autoUpdate ) {
 			clearLines();
@@ -53,15 +70,15 @@ window.addEventListener( 'load', function() {
 		}
 	}
 
+	gui.add( params, 'lineWidth', 1, 20 ).onChange( updateMaterial );
+	gui.add( params, 'dashArray', 0, 3 ).onChange( updateMaterial );
+	gui.add( params, 'dashRatio', 0, 1 ).onChange( updateMaterial );
+	gui.add( params, 'strokes' ).onChange( updateMaterial );
+	gui.add( params, 'sizeAttenuation' ).onChange( updateMaterial );
 	gui.add( params, 'curves' ).onChange( update );
 	gui.add( params, 'circles' ).onChange( update );
 	gui.add( params, 'amount', 1, 1000 ).onChange( update );
-	gui.add( params, 'lineWidth', 1, 20 ).onChange( update );
-	gui.add( params, 'dashArray', 0, 3 ).onChange( update );
-	gui.add( params, 'dashRatio', 0, 1 ).onChange( update );
 	gui.add( params, 'taper', [ 'none', 'linear', 'parabolic', 'wavy' ] ).onChange( update );
-	gui.add( params, 'strokes' ).onChange( update );
-	gui.add( params, 'sizeAttenuation' ).onChange( update );
 	gui.add( params, 'autoUpdate' ).onChange( update );
 	gui.add( params, 'update' );
 	gui.add( params, 'animateWidth' );
@@ -79,17 +96,18 @@ window.addEventListener( 'load', function() {
 } );
 
 var TAU = 2 * Math.PI;
-var hexagonGeometry = new THREE.Geometry();
+var hexagonGeometry = new THREE.BufferGeometry();
+const hexVertices = [];
 for( var j = 0; j < TAU - .1; j += TAU / 100 ) {
-	var v = new THREE.Vector3();
-	v.set( Math.cos( j ), Math.sin( j ), 0 );
-	hexagonGeometry.vertices.push( v );
+	
+	hexVertices.push( Math.cos( j ), Math.sin( j ), 0 );
 }
-hexagonGeometry.vertices.push( hexagonGeometry.vertices[ 0 ].clone() );
+hexVertices.push( hexVertices[ 0 ], hexVertices[ 1 ], 0 );
+hexagonGeometry.setAttribute( 'position', new THREE.Float32BufferAttribute( hexVertices, 3 ) );
 
 function createCurve() {
 
-	var s = new THREE.ConstantSpline();
+	var s = new ConstantSpline();
 	var rMin = 5;
 	var rMax = 10;
 	var origin = new THREE.Vector3( Maf.randomInRange( -rMin, rMin ), Maf.randomInRange( -rMin, rMin ), Maf.randomInRange( -rMin, rMin ) );
@@ -106,15 +124,15 @@ function createCurve() {
 	s.p3.multiplyScalar( rMin + Math.random() * rMax );
 
 	s.calculate();
-	var geometry = new THREE.Geometry();
 	s.calculateDistances();
 	//s.reticulate( { distancePerStep: .1 });
 	s.reticulate( { steps: 500 } );
- 	var geometry = new THREE.Geometry();
-
+ 	var geometry = new THREE.BufferGeometry();
+	const vertices = [];
 	for( var j = 0; j < s.lPoints.length - 1; j++ ) {
-		geometry.vertices.push( s.lPoints[ j ].clone() );
+		vertices.push( ...s.lPoints[ j ] );
 	}
+	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 
 	return geometry;
 
@@ -211,7 +229,7 @@ function createLines() {
 }
 
 function makeVerticalLine() {
-	var g = new THREE.Geometry()
+	var g = new THREE.BufferGeometry()
 	var x = ( .5 - Math.random() ) * 100;
 	g.vertices.push( new THREE.Vector3( x, -10, 0 ) );
 	g.vertices.push( new THREE.Vector3( x, 10, 0 ) );
@@ -219,7 +237,7 @@ function makeVerticalLine() {
 }
 
 function makeSquare() {
-	var g = new THREE.Geometry()
+	var g = new THREE.BufferGeometry()
 	var x = ( .5 - Math.random() ) * 100;
 	g.vertices.push( new THREE.Vector3( -1, -1, 0 ) );
 	g.vertices.push( new THREE.Vector3( 1, -1, 0 ) );

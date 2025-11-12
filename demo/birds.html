@@ -16,13 +16,21 @@
 			<p>Efficient and fast line updating. Move your mouse around.</p>
 		</div>
 
-		<script src="js/three.min.js"></script>
-		<script src="js/OrbitControls.js"></script>
-		<script src="../src/THREE.MeshLine.js"></script>
-		<script src="js/Bird.js"></script>
-
-		<script>
-
+	
+		<script type="importmap">
+		    {
+		        "imports": {
+				
+		            "three": "./js/three152.module.js"
+		        }
+		    }
+		</script>
+		<script src="./boids.js" type="module"></script>
+		<!-- <script type="module">
+			import * as THREE from 'three';
+			import { MeshLine, MeshLineMaterial } from '../src/THREE.Meshline.js';
+			import { OrbitControls } from './js/OrbitControls.js';
+			import {Bird } from './js/Bird.js';
 			var scene = new THREE.Scene();
 
 			var SCREEN_WIDTH = window.innerWidth,
@@ -397,7 +405,7 @@
 					scene.add( bird );
 				}
 
-				controls = new THREE.OrbitControls( camera,  renderer.domElement  );
+				controls = new OrbitControls( camera,  renderer.domElement  );
 				controls.enableDamping = true;
 				controls.dampingFactor = 0.25;
 				controls.enableZoom = false;
@@ -475,7 +483,7 @@
 				renderer.render( scene, camera );
 			}
 
-		</script>
+		</script> -->
 
 	</body>
 </html>
