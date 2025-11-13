@@ -1,4 +1,9 @@
-'use strict'
+import * as THREE from 'three';
+import {OrbitControls} from './OrbitControls.js';
+import { OBJLoader } from './OBJLoader.js';
+import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { mergeGeometries } from './BufferGeometryUtils.js';
+
 
 var container = document.getElementById( 'container' );
 
@@ -11,7 +16,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
 container.appendChild( renderer.domElement );
 
-var controls = new THREE.OrbitControls( camera, renderer.domElement );
+var controls = new OrbitControls( camera, renderer.domElement );
 var clock = new THREE.Clock();
 
 var colors = [
@@ -104,8 +109,8 @@ function drawSVG( source ) {
 
     	if( p instanceof SVGPathElement && p.pathSegList ) {
 
-    		var line = new THREE.Geometry();
-    		var vertices = line.vertices;
+    		let line = new THREE.BufferGeometry();
+    		let vertices = [],indexes = [];
     		var x, y;
     		var ox, oy;
     		var px, py;
@@ -131,48 +136,55 @@ function drawSVG( source ) {
                     y = segment.y;
                     ox = x;
                     oy = y;
-                    // add line;
-    				lines.push( line );
-    				line = new THREE.Geometry();
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    // add line;  有可能前面闭合路径了。
+					if( vertices.length > 0 ){
+
+						line.setAttribute('position', new THREE.Float32BufferAttribute( vertices ,3) );
+						lines.push( line );
+						vertices= [];
+						line = new THREE.BufferGeometry();
+					}
+                    vertices.push( x, y, 0  );
                 }
                 if( segment instanceof SVGPathSegLinetoRel ) {
                     x = px + segment.x;
                     y = py + segment.y;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    vertices.push(  x, y, 0  );
                 }
                 if( segment instanceof SVGPathSegLinetoAbs ) {
                     x = segment.x;
                     y = segment.y;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    vertices.push(  x, y, 0 );
                 }
                 if( segment instanceof SVGPathSegLinetoVerticalRel ) {
                     x = px;
                     y = py + segment.y;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    vertices.push( x, y, 0  );
                 }
                 if( segment instanceof SVGPathSegLinetoHorizontalRel ) {
                     x = px + segment.x;
                     y = py;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    vertices.push( x, y, 0 ) ;
                 }
                 if( segment instanceof SVGPathSegLinetoHorizontalAbs ) {
                     x = segment.x;
                     y = py;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    vertices.push( x, y, 0  );
                 }
                 if( segment instanceof SVGPathSegLinetoVerticalAbs ) {
                     x = px;
                     y = segment.y;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
+                    vertices.push( x, y, 0  );
                 }
                 if( segment instanceof SVGPathSegClosePath ) {
                     x = ox;
                     y = oy;
-                    line.vertices.push( new THREE.Vector3( x, y, 0 ) );
                     // add line
+                    vertices.push( x, y, 0  );
+					line.setAttribute('position', new THREE.Float32BufferAttribute( vertices ,3) );
     				lines.push( line );
-    				line = new THREE.Geometry();
+					vertices= [];
+    				line = new THREE.BufferGeometry();
                 }
 
                 px = x;

@@ -1,19 +1,25 @@
-'use strict'
+import * as THREE from 'three';
+import {OrbitControls} from './OrbitControls.js';
+import { OBJLoader } from './OBJLoader.js';
+import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+
+
+let autoRotate = true;
 
 var container = document.getElementById( 'container' );
 
 var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, .1, 1000 );
-var camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 1, 1000 );
-camera.position.set( 50, 10, 0 );
-var frustumSize = 1000;
+let  cameraP = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, .1, 1000 );
+let camera   =  new THREE.OrthographicCamera( -1, 1, 1, -1, 1, 1000 );
+camera.position.set( 25, 5, 0 );
+var frustumSize = 100;
 
 var renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
 container.appendChild( renderer.domElement );
 
-var controls = new THREE.OrbitControls( camera, renderer.domElement );
+var controls = new OrbitControls( camera, renderer.domElement );
 var clock = new THREE.Clock();
 
 var colors = [
@@ -40,11 +46,17 @@ scene.add( graph );
 
 init()
 render();
+console.log(scene,camera)
 
 function makeLine( geo, c ) {
 
 	var g = new MeshLine();
-	g.setGeometry( geo );
+	if(geo.type == "BufferGeometry"){
+		g.setGeometry( geo );
+	}else  {
+		g.setPoints( geo );
+	}
+
 
 	var material = new MeshLineMaterial( {
 		useMap: false,
@@ -97,7 +109,7 @@ function createLines() {
 		line[ j + 1 ] = .02 * j + 5 * Math.sin( .01 *  j ) * Math.cos( .005 * j );
 		line[ j + 2 ] = 10;
 	}
-	makeLine( line, 4 );
+	makeLine( line, 3 );
 
 	var line = new Float32Array( 600 );
 	for( var j = 0; j < 200 * 3; j += 3 ) {
@@ -105,22 +117,26 @@ function createLines() {
 		line[ j + 1 ] = Math.exp( .005 * j );
 		line[ j + 2 ] = 20;
 	}
+	makeLine( line, 4 );
+
+	// xyz axes
+	var line = new THREE.BufferGeometry(),vertices = [];
+	vertices.push(  -30, -30, -30  );
+	vertices.push(  30, -30, -30  );
+	line.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 	makeLine( line, 5 );
 
-	var line = new THREE.Geometry();
-	line.vertices.push( new THREE.Vector3( -30, -30, -30 ) );
-	line.vertices.push( new THREE.Vector3( 30, -30, -30 ) );
-	makeLine( line, 3 );
+	 line = new THREE.BufferGeometry(),vertices = [];
+	vertices.push(  -30, -30, -30  );
+	vertices.push(  -30, 30, -30  );
+	line.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+	makeLine( line, 6 );
 
-	var line = new THREE.Geometry();
-	line.vertices.push( new THREE.Vector3( -30, -30, -30 ) );
-	line.vertices.push( new THREE.Vector3( -30, 30, -30 ) );
-	makeLine( line, 3 );
-
-	var line = new THREE.Geometry();
-	line.vertices.push( new THREE.Vector3( -30, -30, -30 ) );
-	line.vertices.push( new THREE.Vector3( -30, -30, 30 ) );
-	makeLine( line, 3 );
+	 line = new THREE.BufferGeometry(),vertices = [];
+	vertices.push(  -30, -30, -30  );
+	vertices.push(  -30, -30, 30  );
+	line.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+	makeLine( line, 7 );
 
 }
 
@@ -146,13 +162,19 @@ function onWindowResize() {
 
 }
 
+
 window.addEventListener( 'resize', onWindowResize );
+window.addEventListener('keydown', (e)=>{
+	if( e.key == " "){
+		autoRotate = !autoRotate;
+	}
+})
 
 function render() {
 
 	requestAnimationFrame( render );
 	controls.update();
-	graph.rotation.y += .25 * clock.getDelta();
+	autoRotate && (graph.rotation.y += .25 * clock.getDelta());
 
 	renderer.render( scene, camera );
 

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls.js';
-// import {GUI} from 'three/examples/jsm/libs/dat.gui.module.js';
-import {ConstantSpline} from './THREE.ConstantSpline.js';
+import { OBJLoader } from './OBJLoader.js';
 import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { mergeGeometries } from './BufferGeometryUtils.js';
 
 
 var container = document.getElementById( 'container' );
@@ -16,7 +16,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
 container.appendChild( renderer.domElement );
 
-var controls = new THREE.OrbitControls( camera, renderer.domElement );
+var controls = new OrbitControls( camera, renderer.domElement );
 var clock = new THREE.Clock();
 
 var colors = [
@@ -86,7 +86,7 @@ function readModel() {
 
     return new Promise( function( resolve, reject ) {
 
-        var loader = new THREE.OBJLoader();
+        var loader = new OBJLoader();
         loader.load( 'assets/LeePerrySmith.obj', function( res ) {
             resolve( res );
         } )
@@ -96,21 +96,9 @@ function readModel() {
 }
 
 function collectPoints( source ) {
-
-	var total = 0;
-	source.children.forEach( function( o ) {
-		total += o.geometry.attributes.position.count;
-	})
-	var g = new THREE.BufferGeometry();
-	g.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( total * 3 ), 3 ) );
-
-	var offset = 0;
-	source.children.forEach( function( o ) {
-		g.merge( o.geometry, offset );
-		offset += o.geometry.attributes.position.count;
-	})
-
-    g.center( g );
+	const geometries = source.children.map( o => o.geometry );
+	let g  = mergeGeometries(geometries)
+    g.center(  );
     var scaleMatrix = new THREE.Matrix4();
     scaleMatrix.makeScale( 1000, 1000, 1000 );
     g.applyMatrix4( scaleMatrix );
@@ -144,7 +132,7 @@ function collectPoints( source ) {
     scene.remove( o );
 
     var l = new MeshLine();
-    l.setGeometry( points, function( p ) { return p } );
+    l.setPoints( points, function( p ) { return p } );
     var line = new THREE.Mesh( l.geometry, material );
     scene.add( line );
 

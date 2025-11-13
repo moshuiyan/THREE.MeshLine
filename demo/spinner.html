@@ -16,9 +16,16 @@
     <p id="directions">Touch and drag to draw lines.<br/>Try multiple fingers on mobile!</p>
 </body>
 
-<script src="js/three.min.js"></script>
+<script type="importmap">
+    {
+        "imports": {
+
+            "three": "./js/three152.module.js"
+        }
+    }
+</script>
+<script src="js/dat.gui.min.js"></script>
 <script src="js/Maf.js"></script>
-<script src="../src/THREE.MeshLine.js"></script>
-<script src="js/main-spinner.js"></script>
+<script type="module" src="js/main-spinner.js"></script>
 
 </html>

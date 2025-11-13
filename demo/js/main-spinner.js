@@ -1,5 +1,19 @@
-'use strict'
-
+import * as THREE from 'three';
+import {OrbitControls} from './OrbitControls.js';
+import { OBJLoader } from './OBJLoader.js';
+import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { mergeGeometries } from './BufferGeometryUtils.js';
+const gui = new dat.GUI();
+const config = {
+	edit:true
+}
+let  mode = 'edit';// view 
+gui.add(config,'edit').onChange((value)=>{
+    mode = value ? 'edit' : 'view';
+})
+/**
+ * 改为 按空格切换编辑模式和观察模式
+ */
 var container = document.getElementById( 'container' );
 
 var scene = new THREE.Scene();
@@ -60,7 +74,7 @@ function prepareMesh() {
 	}
 
 	var g = new MeshLine();
-	g.setGeometry( geo, function( p ) { return p; } );
+	g.setPoints( geo, function( p ) { return p; } );
 
 	material = new MeshLineMaterial( {
 		useMap: true,
@@ -88,7 +102,7 @@ function prepareMesh() {
 
 function init() {
 
-	plane = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1000, 1000 ), new THREE.MeshNormalMaterial( { side: THREE.DoubleSide,  } ) );
+	plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshNormalMaterial( { side: THREE.DoubleSide,  } ) );
 	plane.material.visible = false;
 	scene.add( plane );
 
@@ -97,7 +111,7 @@ function init() {
 	window.addEventListener( 'mousedown', onMouseDown );
 	window.addEventListener( 'touchstart', onTouchStart );
 	window.addEventListener( 'mouseup', onMouseEnd );
-	window.addEventListener( 'mouseout', onMouseEnd );
+	// window.addEventListener( 'mouseout', onMouseEnd );
 	window.addEventListener( 'touchend', onTouchEnd );
 	window.addEventListener( 'touchcancel', onTouchEnd );
 
@@ -111,7 +125,8 @@ function init() {
 var userInteracting = false;
 
 function onMouseDown( e ) {
-
+	if( mode !== 'edit' ) return  console.log(mode,'mode');
+	 
 	directions.style.opacity = 0;
 
 	if( !meshes[ 0 ] ) {
@@ -137,6 +152,7 @@ function onMouseEnd( e ) {
 	delete nMouse[ id ];
 	delete mouse[ id ];
 
+	mode = 'view';
 	e.preventDefault();
 
 }
@@ -233,7 +249,7 @@ function checkIntersection( id ) {
 		geo[ geo.length - 2 ] = intersects[ 0 ].point.y;
 		geo[ geo.length - 1 ] = d * Math.sin( angle );
 
-		g.setGeometry( geo );
+		g.setPoints( geo );
 
 	}
 
@@ -287,3 +303,5 @@ function render() {
 	renderer.render( scene, camera );
 
 }
+12/3360/1723
+// "https://t0.tianditu.gov.cn/DataServer?T=cva_w&x=3360&y=1723&l={12}&tk=75f0434f240669f4a2df6359275146d2"
