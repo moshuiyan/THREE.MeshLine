@@ -8,11 +8,10 @@ const config = {
 	edit:true
 }
 let  mode = 'edit';// view 
-gui.add(config,'edit').onChange((value)=>{
-    mode = value ? 'edit' : 'view';
-})
+
 /**
  * 改为 按空格切换编辑模式和观察模式
+ * 他好像是打算，绘制完毕之后，就保存，id+1
  */
 var container = document.getElementById( 'container' );
 
@@ -25,7 +24,13 @@ var renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
 container.appendChild( renderer.domElement );
-
+const controls = new OrbitControls( camera, renderer.domElement );
+controls.enabled = false;
+controls.enablePan =false;
+const modeController= gui.add(config,'edit').onChange((value)=>{
+    mode = value ? 'edit' : 'view';
+	controls.enabled = !value;
+})
 var directions = document.getElementById( 'directions' );
 
 var colors = [
@@ -136,6 +141,7 @@ function onMouseDown( e ) {
 	}
 
 	userInteracting = true;
+	controls.enabled = false;
 
 	e.preventDefault();
 
@@ -147,12 +153,13 @@ function onMouseEnd( e ) {
 
 	var id = 0;
 	var m = meshes[ id ];
-	scene.remove( m );
+	// scene.remove( m );
 	delete meshes[ id ];
 	delete nMouse[ id ];
 	delete mouse[ id ];
 
-	mode = 'view';
+	modeController.setValue(false);
+	controls.enabled = true;
 	e.preventDefault();
 
 }
@@ -303,5 +310,3 @@ function render() {
 	renderer.render( scene, camera );
 
 }
-12/3360/1723
-// "https://t0.tianditu.gov.cn/DataServer?T=cva_w&x=3360&y=1723&l={12}&tk=75f0434f240669f4a2df6359275146d2"
