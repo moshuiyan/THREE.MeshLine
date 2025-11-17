@@ -1,5 +1,5 @@
 			import * as THREE from 'three';
-			import { MeshLine, MeshLineMaterial } from '../src/THREE.MeshLine.js';
+			import { MeshLineGeometry, MeshLineMaterial } from '../src/THREE.MeshLine.js';
 			import { OrbitControls } from './js/OrbitControls.js';
 			import {Bird } from './js/Bird.js';
 			var scene = new THREE.Scene();
@@ -45,7 +45,7 @@
             }
 
             // Create the line mesh
-            this.trail_line = new MeshLine();
+            this.trail_line = new MeshLineGeometry();
             this.trail_line.setPoints(trailPoints, function (p) { return p; }); // makes width taper
 
 

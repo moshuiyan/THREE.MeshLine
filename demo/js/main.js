@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls.js';
 // import {GUI} from 'three/examples/jsm/libs/dat.gui.module.js';
 import {ConstantSpline} from './THREE.ConstantSpline.js';
-import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { MeshLineGeometry,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
 var container = document.getElementById( 'container' );
 
 var scene = new THREE.Scene();
@@ -167,7 +167,7 @@ function clearLines() {
 
 function makeLine( geo ) {
 
-	var g = new MeshLine();
+	var g = new MeshLineGeometry();
 
 	switch( params.taper ) {
 		case 'none': g.setGeometry( geo ); break;

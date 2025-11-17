@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls.js';
 import { OBJLoader } from './OBJLoader.js';
-import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { MeshLineGeometry,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
 import { mergeGeometries } from './BufferGeometryUtils.js';
 
 
@@ -62,7 +62,7 @@ loader.load('assets/stroke.png', function(texture) {
 
 function makeLine( geo ) {
 
-	var g = new MeshLine();
+	var g = new MeshLineGeometry();
 	g.setGeometry( geo );
 
 	var mesh = new THREE.Mesh( g.geometry, material );
@@ -131,7 +131,7 @@ function collectPoints( source ) {
 
     scene.remove( o );
 
-    var l = new MeshLine();
+    var l = new MeshLineGeometry();
     l.setPoints( points, function( p ) { return p } );
     var line = new THREE.Mesh( l.geometry, material );
     scene.add( line );

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls.js';
 import { OBJLoader } from './OBJLoader.js';
-import { MeshLine,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { MeshLineGeometry,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
 
 
 let autoRotate = true;
@@ -50,7 +50,7 @@ console.log(scene,camera)
 
 function makeLine( geo, c ) {
 
-	var g = new MeshLine();
+	var g = new MeshLineGeometry();
 	if(geo.type == "BufferGeometry"){
 		g.setGeometry( geo );
 	}else  {

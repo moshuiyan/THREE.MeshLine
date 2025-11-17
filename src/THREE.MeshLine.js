@@ -22,12 +22,11 @@ import * as THREE from 'three';
 
     return dst
   }
-  class MeshLine extends THREE.BufferGeometry {
+  class MeshLineGeometry extends THREE.BufferGeometry {
+    type = 'MeshLineGeometry'
     constructor()
     {
       super();
-      this.isMeshLine = true;
-      this.type = 'MeshLine'
 
       this.positions = []
 
@@ -46,38 +45,6 @@ import * as THREE from 'three';
       // Used to raycast
       this.matrixWorld = new THREE.Matrix4()
 
-      Object.defineProperties(this, {
-        // this is now a bufferGeometry
-        // add getter to support previous api
-        geometry: {
-          enumerable: true,
-          get: function() {
-            return this
-          },
-        },
-        geom: {
-          enumerable: true,
-          get: function() {
-            return this._geom
-          },
-          set: function(value) {
-            this.setGeometry(value, this.widthCallback)
-          },
-        },
-        // for declaritive architectures
-        // to return the same value that sets the points
-        // eg. this.points = points
-        // console.log(this.points) -> points
-        points: {
-          enumerable: true,
-          get: function() {
-            return this._points
-          },
-          set: function(value) {
-            this.setPoints(value, this.widthCallback)
-          },
-        },
-      })
     }
  
 
@@ -131,73 +98,9 @@ import * as THREE from 'three';
 		}
 		this.process();
   }
+  // 它这个方法，原本应该也是打算写到mesh上的，但是不知道为啥写到geometry里面了
 
- raycast(raycaster, intersects) {
-    var inverseMatrix = new THREE.Matrix4()
-    var ray = new THREE.Ray()
-    var sphere = new THREE.Sphere()
-    var interRay = new THREE.Vector3()
-    var geometry = this.geometry
-    // Checking boundingSphere distance to ray
 
-    if (!geometry.boundingSphere) geometry.computeBoundingSphere()
-    sphere.copy(geometry.boundingSphere)
-    sphere.applyMatrix4(this.matrixWorld)
-
-    if (raycaster.ray.intersectSphere(sphere, interRay) === false) {
-      return
-    }
-
-    inverseMatrix.copy( this.matrixWorld ).invert();
-    ray.copy(raycaster.ray).applyMatrix4(inverseMatrix)
-
-    var vStart = new THREE.Vector3()
-    var vEnd = new THREE.Vector3()
-    var interSegment = new THREE.Vector3()
-    var step = this instanceof THREE.LineSegments ? 2 : 1
-    var index = geometry.index
-    var attributes = geometry.attributes
-
-    if (index !== null) {
-      var indices = index.array
-      var positions = attributes.position.array
-      var widths = attributes.width.array
-
-      for (var i = 0, l = indices.length - 1; i < l; i += step) {
-        var a = indices[i]
-        var b = indices[i + 1]
-
-        vStart.fromArray(positions, a * 3)
-        vEnd.fromArray(positions, b * 3)
-        var width = widths[Math.floor(i / 3)] !== undefined ? widths[Math.floor(i / 3)] : 1
-        var precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2
-        var precisionSq = precision * precision
-
-        var distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment)
-
-        if (distSq > precisionSq) continue
-
-        interRay.applyMatrix4(this.matrixWorld) //Move back to world space for distance calculation
-
-        var distance = raycaster.ray.origin.distanceTo(interRay)
-
-        if (distance < raycaster.near || distance > raycaster.far) continue
-
-        intersects.push({
-          distance: distance,
-          // What do we want? intersection point on the ray or on the segment??
-          // point: raycaster.ray.at( distance ),
-          point: interSegment.clone().applyMatrix4(this.matrixWorld),
-          index: i,
-          face: null,
-          faceIndex: null,
-          object: this,
-        })
-        // make event only fire once
-        i = l
-      }
-    }
-  }
   compareV3 (a, b) {
     var aa = a * 6
     var ab = b * 6
@@ -686,10 +589,97 @@ import * as THREE from 'three';
   }
 }
   
-  export {
+  
+
+class MeshLine extends THREE.Mesh{
+  type = 'MeshLine'
+  isMeshLine = true;
+  /**@type{MeshLineGeometry} */
+  geometry
+  /**
+   * @type {MeshLineMaterial}
+   */
+  material
+  /**
+   * @param {MeshLineGeometry} geo
+   * @param {MeshLineMaterial} mat
+   */
+  constructor(geo,mat){
+    super(geo,mat)
+    // 因为重新声明了geometry和material， 所以这里重新赋值一下，不然是undefined
+    this.geometry = geo
+    this.material = mat
+  }
+
+   raycast(raycaster, intersects) {
+    var inverseMatrix = new THREE.Matrix4()
+    var ray = new THREE.Ray()
+    var sphere = new THREE.Sphere()
+    var interRay = new THREE.Vector3()
+    /**@type {MeshLineGeometry} */
+    const geometry = this.geometry;
+    // Checking boundingSphere distance to ray
+
+    if (!geometry.boundingSphere) geometry.computeBoundingSphere()
+    sphere.copy(geometry.boundingSphere)
+    sphere.applyMatrix4(this.matrixWorld)
+
+    if (raycaster.ray.intersectSphere(sphere, interRay) === false) {
+      return
+    }
+
+    inverseMatrix.copy( this.matrixWorld ).invert();
+    ray.copy(raycaster.ray).applyMatrix4(inverseMatrix)
+
+    var vStart = new THREE.Vector3()
+    var vEnd = new THREE.Vector3()
+    var interSegment = new THREE.Vector3()
+  // 不知道为啥之前还兼容原始的line
+    const points = geometry._points ;//纯线
+    var attributes = geometry.attributes
+    var widths = attributes.width.array
+
+
+      for (var i = 0; i < points.length-1; i += 1) {
+        
+
+        vStart.set(points[i] * 3, points[i + 1] * 3, points[i + 2] * 3)
+        vEnd.set(points[i + 1] * 3, points[i + 2] * 3, points[i + 3] * 3)
+        // width 应该是插值变化的，这里有点儿麻烦哦，这里取的前一个点的width
+        var width = widths[i*2] !== undefined ? widths[i*2] : 1
+        var precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2
+        var precisionSq = precision * precision
+
+        var distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment)
+
+        if (distSq > precisionSq) continue
+
+        interRay.applyMatrix4(this.matrixWorld) //Move back to world space for distance calculation
+
+        var distance = raycaster.ray.origin.distanceTo(interRay)
+
+        if (distance < raycaster.near || distance > raycaster.far) continue
+
+        intersects.push({
+          distance: distance,
+          // What do we want? intersection point on the ray or on the segment??
+          // point: raycaster.ray.at( distance ),
+          point: interSegment.clone().applyMatrix4(this.matrixWorld),
+          index: i,
+          face: null,
+          faceIndex: null,
+          object: this,
+        })
+        // make event only fire once
+        
+      
+    }
+  }
+}
+export {
     MeshLine,
     MeshLineMaterial,
-    
+    MeshLineGeometry
   }
 
 
