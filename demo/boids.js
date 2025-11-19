@@ -1,5 +1,5 @@
 			import * as THREE from 'three';
-			import { MeshLineGeometry, MeshLineMaterial } from '../src/THREE.MeshLine.js';
+			import { MeshLine, MeshLineGeometry, MeshLineMaterial } from '../src/THREE.MeshLine.js';
 			import { OrbitControls } from './js/OrbitControls.js';
 			import {Bird } from './js/Bird.js';
 			var scene = new THREE.Scene();
@@ -62,7 +62,7 @@
                 side: THREE.DoubleSide
             });
 
-            this.trail_mesh = new THREE.Mesh(this.trail_line.geometry, this.trail_material); // this syntax could definitely be improved!
+            this.trail_mesh = new MeshLine(this.trail_line, this.trail_material); // this syntax could definitely be improved!
             this.trail_mesh.frustumCulled = false;
 
             scene.add(this.trail_mesh);
@@ -404,7 +404,7 @@
 			function onDocumentMouseMove( event ) {
 
 				var vector = new THREE.Vector3( event.clientX - SCREEN_WIDTH_HALF, - event.clientY + SCREEN_HEIGHT_HALF, 0 );
-
+                let boid;    
 				for ( var i = 0, il = boids.length; i < il; i++ ) {
 
 					boid = boids[ i ];

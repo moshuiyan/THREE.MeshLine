@@ -66,7 +66,7 @@ function makeLine( geo, c ) {
 		sizeAttenuation: false,
 		lineWidth: 10,
 	});
-	var mesh = new THREE.Mesh( g.geometry, material );
+	var mesh = new THREE.Mesh( g, material );
 	graph.add( mesh );
 
 }

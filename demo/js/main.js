@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls.js';
 // import {GUI} from 'three/examples/jsm/libs/dat.gui.module.js';
 import {ConstantSpline} from './THREE.ConstantSpline.js';
-import { MeshLineGeometry,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
+import { MeshLine, MeshLineGeometry,MeshLineMaterial } from '../../src/THREE.MeshLine.js';
 var container = document.getElementById( 'container' );
 
 var scene = new THREE.Scene();
@@ -193,7 +193,7 @@ function makeLine( geo ) {
 		transparent: true,
 		side: THREE.DoubleSide
 	});
-	var mesh = new THREE.Mesh( g.geometry, material );
+	var mesh = new MeshLine( g, material );
 	if( params.spread || params.circles ) {
 		var r = 50;
 		mesh.position.set( Maf.randomInRange( -r, r ), Maf.randomInRange( -r, r ), Maf.randomInRange( -r, r ) );

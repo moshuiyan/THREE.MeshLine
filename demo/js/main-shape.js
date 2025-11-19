@@ -65,7 +65,7 @@ function makeLine( geo ) {
 	var g = new MeshLineGeometry();
 	g.setGeometry( geo );
 
-	var mesh = new THREE.Mesh( g.geometry, material );
+	var mesh = new THREE.Mesh( g, material );
 	mesh.position.z += 500;
 	mesh.position.y += 300;
 	mesh.rotation.y = -Math.PI / 2;
@@ -133,7 +133,7 @@ function collectPoints( source ) {
 
     var l = new MeshLineGeometry();
     l.setPoints( points, function( p ) { return p } );
-    var line = new THREE.Mesh( l.geometry, material );
+    var line = new THREE.Mesh( l, material );
     scene.add( line );
 
     document.querySelector( '#title p' ).style.display = 'none';

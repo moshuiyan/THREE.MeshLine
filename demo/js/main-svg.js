@@ -68,7 +68,7 @@ function makeLine( geo ) {
 	var g = new MeshLineGeometry();
 	g.setGeometry( geo );
 
-	var mesh = new THREE.Mesh( g.geometry, material );
+	var mesh = new THREE.Mesh( g, material );
 	mesh.position.z += 500;
 	mesh.position.y += 300;
 	mesh.rotation.y = -Math.PI / 2;
