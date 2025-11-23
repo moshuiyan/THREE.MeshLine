@@ -68,6 +68,8 @@ function makeLine( geo, c ) {
 	});
 	var mesh = new THREE.Mesh( g, material );
 	graph.add( mesh );
+	console.log(mesh);
+	
 
 }
 

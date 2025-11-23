@@ -207,6 +207,8 @@ function onMouseEnd( e ) {
 
 	var id = 0;
 	var m = meshes[ id ];
+	console.log(m,'绘制结束');
+	
 	// scene.remove( m );
 	delete meshes[ id ];
 	delete nMouse[ id ];

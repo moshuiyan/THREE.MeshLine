@@ -29,6 +29,7 @@ var Params = function() {
 	this.dashArray = 0.6;
 	this.dashOffset = 0;
 	this.dashRatio = 0.5;
+	this.solidEnd = 0;
 	this.taper = 'parabolic';
 	this.strokes = false;
 	this.sizeAttenuation = false;
@@ -53,6 +54,7 @@ window.addEventListener( 'load', function() {
 		for ( let line of lines){
 			line.material.uniforms.dashArray.value = params.dashArray;
 			line.material.uniforms.dashRatio.value = params.dashRatio;
+			line.material.uniforms.solidEnd.value = params.solidEnd;
 			line.material.uniforms.dashOffset.value = params.animateDashOffset ? clock.getElapsedTime() : 0;
 			line.material.uniforms.sizeAttenuation.value = params.sizeAttenuation;
 			line.material.uniforms.lineWidth.value = params.animateWidth ? Maf.randomInRange( 1, params.lineWidth ) : params.lineWidth;
@@ -75,6 +77,7 @@ window.addEventListener( 'load', function() {
 	gui.add( params, 'dashRatio', 0, 1 ).onChange( updateMaterial );
 	gui.add( params, 'strokes' ).onChange( updateMaterial );
 	gui.add( params, 'sizeAttenuation' ).onChange( updateMaterial );
+	gui.add( params, 'solidEnd' ).onChange( updateMaterial );
 	gui.add( params, 'curves' ).onChange( update );
 	gui.add( params, 'circles' ).onChange( update );
 	gui.add( params, 'amount', 1, 1000 ).onChange( update );
@@ -194,6 +197,8 @@ function makeLine( geo ) {
 		side: THREE.DoubleSide
 	});
 	var mesh = new MeshLine( g, material );
+	g.computeDistance();
+	material.useDistance = true; 
 	if( params.spread || params.circles ) {
 		var r = 50;
 		mesh.position.set( Maf.randomInRange( -r, r ), Maf.randomInRange( -r, r ), Maf.randomInRange( -r, r ) );
