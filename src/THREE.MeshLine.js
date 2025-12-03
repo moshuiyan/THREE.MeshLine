@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
   function memcpy(src, srcOffset, dst, dstOffset, length) {
-    var i
+    let i
 
     src = src.subarray || src.slice ? src : src.buffer
     dst = dst.subarray || dst.slice ? dst : dst.buffer
@@ -80,17 +80,17 @@ import * as THREE from 'three';
 			// could transform Vector3 array into the array used below
 			// but this approach will only loop through the array once
 			// and is more performant
-			for (var j = 0; j < points.length; j++) {
-				var p = points[j];
-				var c = j / points.length;
+			for (let j = 0; j < points.length; j++) {
+				let p = points[j];
+				let c = j / points.length;
 				this.positions.push(p.x, p.y, p.z);
 				this.positions.push(p.x, p.y, p.z);
 				this.counters.push(c);
 				this.counters.push(c);
 			}
 		} else {
-			for (var j = 0; j < points.length; j += 3) {
-				var c = j / points.length;
+			for (let j = 0; j < points.length; j += 3) {
+				let c = j / points.length;
 				this.positions.push(points[j], points[j + 1], points[j + 2]);
 				this.positions.push(points[j], points[j + 1], points[j + 2]);
 				this.counters.push(c);
@@ -103,8 +103,8 @@ import * as THREE from 'three';
 
 
   compareV3 (a, b) {
-    var aa = a * 6
-    var ab = b * 6
+    let aa = a * 6
+    let ab = b * 6
     return (
       this.positions[aa] === this.positions[ab] &&
       this.positions[aa + 1] === this.positions[ab + 1] &&
@@ -113,12 +113,12 @@ import * as THREE from 'three';
   }
 
   copyV3 (a) {
-    var aa = a * 6
+    let aa = a * 6
     return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]]
   }
 
   process () {
-    var l = this.positions.length / 6
+    let l = this.positions.length / 6
 
     this.previous = []
     this.next = []
@@ -127,9 +127,9 @@ import * as THREE from 'three';
     this.indices_array = []
     this.uvs = []
 
-    var w
+    let w
 
-    var v
+    let v
     // initial previous points
     if (this.compareV3(0, l - 1)) {
       v = this.copyV3(l - 2)
@@ -139,7 +139,7 @@ import * as THREE from 'three';
     this.previous.push(v[0], v[1], v[2])
     this.previous.push(v[0], v[1], v[2])
 
-    for (var j = 0; j < l; j++) {
+    for (let j = 0; j < l; j++) {
       // sides
       this.side.push(1)
       this.side.push(-1)
@@ -161,7 +161,7 @@ import * as THREE from 'three';
         this.previous.push(v[0], v[1], v[2])
 
         // indices
-        var n = j * 2
+        let n = j * 2
         this.indices_array.push(n, n + 1, n + 2)
         this.indices_array.push(n + 2, n + 1, n + 3)
       }
@@ -246,10 +246,10 @@ import * as THREE from 'three';
    * @param position
    */
   advance(position) {
-    var positions = this._attributes.position.array
-    var previous = this._attributes.previous.array
-    var next = this._attributes.next.array
-    var l = positions.length
+    let positions = this._attributes.position.array
+    let previous = this._attributes.previous.array
+    let next = this._attributes.next.array
+    let l = positions.length
 
     // PREVIOUS
     memcpy(positions, 0, previous, 0, l)
@@ -659,10 +659,10 @@ class MeshLine extends THREE.Mesh{
   }
 
    raycast(raycaster, intersects) {
-    var inverseMatrix = new THREE.Matrix4()
-    var ray = new THREE.Ray()
-    var sphere = new THREE.Sphere()
-    var interRay = new THREE.Vector3()
+    const inverseMatrix = new THREE.Matrix4()
+    const ray = new THREE.Ray()
+    const sphere = new THREE.Sphere()
+    const interRay = new THREE.Vector3()
     /**@type {MeshLineGeometry} */
     const geometry = this.geometry;
     // Checking boundingSphere distance to ray
@@ -678,32 +678,32 @@ class MeshLine extends THREE.Mesh{
     inverseMatrix.copy( this.matrixWorld ).invert();
     ray.copy(raycaster.ray).applyMatrix4(inverseMatrix)
 
-    var vStart = new THREE.Vector3()
-    var vEnd = new THREE.Vector3()
-    var interSegment = new THREE.Vector3()
+    const vStart = new THREE.Vector3()
+    const vEnd = new THREE.Vector3()
+    const interSegment = new THREE.Vector3()
   // 不知道为啥之前还兼容原始的line
     const points = geometry._points ;//纯线
-    var attributes = geometry.attributes
-    var widths = attributes.width.array
+    const attributes = geometry.attributes
+    const widths = attributes.width.array
 
 
-      for (var i = 0; i < points.length-1; i += 1) {
+      for (let i = 0; i < points.length-1; i += 1) {
         
 
         vStart.set(points[i] * 3, points[i + 1] * 3, points[i + 2] * 3)
         vEnd.set(points[i + 1] * 3, points[i + 2] * 3, points[i + 3] * 3)
         // width 应该是插值变化的，这里有点儿麻烦哦，这里取的前一个点的width
-        var width = widths[i*2] !== undefined ? widths[i*2] : 1
-        var precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2
-        var precisionSq = precision * precision
+        let width = widths[i*2] !== undefined ? widths[i*2] : 1
+        let precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2
+        let precisionSq = precision * precision
 
-        var distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment)
+        let distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment)
 
         if (distSq > precisionSq) continue
 
         interRay.applyMatrix4(this.matrixWorld) //Move back to world space for distance calculation
 
-        var distance = raycaster.ray.origin.distanceTo(interRay)
+        let distance = raycaster.ray.origin.distanceTo(interRay)
 
         if (distance < raycaster.near || distance > raycaster.far) continue
 
